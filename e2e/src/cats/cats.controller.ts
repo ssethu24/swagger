@@ -1,5 +1,15 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  UseInterceptors,
+  UploadedFile
+} from '@nestjs/common';
+import {
+  ApiBody,
   ApiBearerAuth,
   ApiConsumes,
   ApiExtension,
@@ -13,6 +23,7 @@ import { CatsService } from './cats.service';
 import { Cat } from './classes/cat.class';
 import { CreateCatDto } from './dto/create-cat.dto';
 import { PaginationQuery } from './dto/pagination-query.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @ApiSecurity('basic')
 @ApiBearerAuth()
@@ -78,4 +89,24 @@ export class CatsController {
 
   @Get('site*')
   getSite() {}
+
+  @Post('upload')
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiBody({
+    type: 'multipart/form-data',
+    required: true,
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary'
+        }
+      }
+    }
+  })
+  uploadFile(@UploadedFile() file) {
+    return file;
+  }
 }
